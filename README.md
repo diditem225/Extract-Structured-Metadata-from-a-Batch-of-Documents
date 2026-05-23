@@ -1,21 +1,22 @@
-# Document Tagger - Multi-Format Support
+# Document Tagger - Extract Structured Metadata from Documents
 
-Extract structured metadata from **PDF, TXT, HTML** files automatically using AI.
+Automatically extract structured metadata from unstructured documents using AI and validate with Pydantic.
 
-## 🎯 What's New
+## 🎯 Features
 
-Now supports multiple file formats:
 - ✅ **PDF files** (.pdf)
 - ✅ **Text files** (.txt)
 - ✅ **HTML files** (.html, .htm)
-- ✅ **Scanned reports** (via PDF)
+- ✅ **Batch processing** - Process entire folders
+- ✅ **Pydantic validation** - Ensures data quality
+- ✅ **JSON output** - Ready for databases or analytics
 
 ## 🚀 Quick Start
 
 ```bash
 cd 7
 pip install -r requirements.txt
-python document_tagger_advanced.py
+python document_tagger.py
 ```
 
 ## 📁 How It Works
@@ -31,57 +32,30 @@ documents/
 
 ### 2. Run the Script
 ```bash
-python document_tagger_advanced.py
+python document_tagger.py
 ```
 
 ### 3. Get Structured Output
 Creates `tagged_documents.json` with all metadata
 
-## 📊 Supported Formats
+## 📋 What It Does
 
-| Format | Extension | Library Used |
-|--------|-----------|--------------|
-| Text | .txt | Built-in |
-| HTML | .html, .htm | BeautifulSoup4 |
-| PDF | .pdf | PyPDF2 |
+Transforms unstructured documents into structured, validated metadata:
 
-## 🔧 How Each Format is Processed
+**Input**: Raw documents (PDF, TXT, HTML)  
+**Process**: AI extracts metadata → Pydantic validates → JSON output  
+**Output**: Clean structured data ready for databases or analytics
 
-### **Text Files (.txt)**
-```python
-def read_text_file(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return f.read()
-```
-- Direct reading
-- No preprocessing needed
+### Extracted Fields
 
-### **HTML Files (.html, .htm)**
-```python
-def read_html_file(filepath):
-    soup = BeautifulSoup(f.read(), 'html.parser')
-    # Remove scripts and styles
-    # Extract clean text
-    return text
-```
-- Parses HTML structure
-- Removes scripts/styles
-- Extracts clean text
+- **headline**: Article title
+- **journalist**: Author name
+- **published_on**: Date (YYYY-MM-DD format)
+- **tags**: List of relevant topics (3-5 tags)
+- **category**: One of: news, opinion, feature, review
+- **source_file**: Original filename
 
-### **PDF Files (.pdf)**
-```python
-def read_pdf_file(filepath):
-    pdf_reader = PyPDF2.PdfReader(f)
-    text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text()
-    return text
-```
-- Reads all pages
-- Extracts text from each page
-- Combines into single string
-
-## 📋 Example Run
+## 📋 Example Output
 
 ```
 DOCUMENT TAGGER - MULTI-FORMAT SUPPORT
@@ -96,6 +70,7 @@ Processing Document 1: article1.txt
    Journalist: Emma Rodriguez
    Published: 2025-01-15
    Category: news
+   Tags: Electric Vehicles, Regulations, Sustainability
 
 Processing Document 2: article2.html
    ✓ Successfully read 356 characters
@@ -104,14 +79,16 @@ Processing Document 2: article2.html
    Journalist: Michael Chen
    Published: 2024-11-20
    Category: opinion
+   Tags: Remote Work, Productivity, Work-Life Balance
 
-Processing Document 3: report.pdf
-   ✓ Successfully read 1250 characters
+Processing Document 3: article3.txt
+   ✓ Successfully read 450 characters
 ✅ Successfully extracted metadata
-   Headline: Q4 Financial Report
-   Journalist: Sarah Johnson
-   Published: 2025-01-10
-   Category: news
+   Headline: Inside the World of Competitive Gaming
+   Journalist: Jessica Park
+   Published: 2024-12-03
+   Category: feature
+   Tags: Esports, Gaming, Competition
 
 SUMMARY
 Total documents: 3
@@ -119,9 +96,21 @@ Successfully processed: 3
 Failed: 0
 
 ✅ Structured data saved to: tagged_documents.json
+
+SAMPLE OUTPUT
+{
+  "headline": "Breaking: New Electric Vehicle Regulations",
+  "journalist": "Emma Rodriguez",
+  "published_on": "2025-01-15",
+  "tags": ["Electric Vehicles", "Regulations", "Sustainability"],
+  "category": "news",
+  "source_file": "article1.txt"
+}
 ```
 
-## 📤 Output Format
+## 📤 JSON Output Structure
+
+All extracted metadata is saved to `tagged_documents.json`:
 
 ```json
 [
@@ -129,7 +118,7 @@ Failed: 0
     "headline": "Breaking: New Electric Vehicle Regulations",
     "journalist": "Emma Rodriguez",
     "published_on": "2025-01-15",
-    "tags": ["Electric Vehicles", "Regulations"],
+    "tags": ["Electric Vehicles", "Regulations", "Sustainability"],
     "category": "news",
     "source_file": "article1.txt"
   },
@@ -137,114 +126,55 @@ Failed: 0
     "headline": "Why Remote Work is Here to Stay",
     "journalist": "Michael Chen",
     "published_on": "2024-11-20",
-    "tags": ["Remote Work", "Productivity"],
+    "tags": ["Remote Work", "Productivity", "Work-Life Balance"],
     "category": "opinion",
     "source_file": "article2.html"
+  },
+  {
+    "headline": "Inside the World of Competitive Gaming",
+    "journalist": "Jessica Park",
+    "published_on": "2024-12-03",
+    "tags": ["Esports", "Gaming", "Competition"],
+    "category": "feature",
+    "source_file": "article3.txt"
   }
 ]
 ```
 
-## 🎓 Key Features
+**Note**: Console shows only the first document to avoid clutter. Full data is in the JSON file.
 
-### 1. **Automatic Format Detection**
-```python
-def read_document(filepath):
-    file_extension = Path(filepath).suffix.lower()
-    
-    if file_extension == '.txt':
-        return read_text_file(filepath)
-    elif file_extension == '.pdf':
-        return read_pdf_file(filepath)
-    elif file_extension in ['.html', '.htm']:
-        return read_html_file(filepath)
-```
+## 🎓 How It Works
 
-### 2. **Batch Processing**
-- Processes all files in `documents/` folder
-- Handles multiple formats in one run
-- Continues if one file fails
+### 1. Document Reading
+Automatically detects file format and uses appropriate parser:
+- **Text files**: Direct reading
+- **HTML files**: BeautifulSoup extracts clean text (removes scripts/styles)
+- **PDF files**: PyPDF2 extracts text from all pages
 
-### 3. **Error Handling**
-- Graceful failure for unsupported formats
-- Continues processing other files
-- Reports which files failed
+### 2. AI Extraction
+Sends document content to Groq AI (llama-3.3-70b-versatile) with structured prompt to extract metadata fields.
 
-### 4. **Validation**
-- Pydantic validates all extracted data
-- Ensures date format (YYYY-MM-DD)
-- Checks category is valid
+### 3. Pydantic Validation
+Validates extracted data:
+- Date format must be YYYY-MM-DD
+- Category must be: news, opinion, feature, or review
+- All required fields must be present
 - Rejects invalid data
 
-## 🔄 Workflow
-
-```
-1. Scan documents/ folder
-   ↓
-2. Detect file format (.txt, .pdf, .html)
-   ↓
-3. Read content using appropriate parser
-   ↓
-4. Send to AI for metadata extraction
-   ↓
-5. Validate with Pydantic
-   ↓
-6. Save to tagged_documents.json
-```
+### 4. JSON Export
+Saves validated metadata to `tagged_documents.json` for downstream use.
 
 ## 💡 Use Cases
 
-### **1. Digital Library**
-- Process mixed document types
-- Extract metadata for cataloging
-- Build searchable database
+- **Digital Libraries**: Catalog mixed document types automatically
+- **News Aggregation**: Extract metadata from articles for organization
+- **Research**: Process academic papers and web articles
+- **Content Management**: Auto-tag and categorize imported documents
+- **Data Analytics**: Build structured datasets from unstructured sources
 
-### **2. News Aggregation**
-- Scrape articles from websites (HTML)
-- Process press releases (PDF)
-- Tag and categorize automatically
+## 🛠️ Technical Details
 
-### **3. Research**
-- Process academic papers (PDF)
-- Extract metadata from web articles (HTML)
-- Organize research materials
-
-### **4. Content Management**
-- Import documents from various sources
-- Auto-tag and categorize
-- Build content database
-
-## 🛠️ Customization
-
-### Add New File Format
-
-```python
-def read_docx_file(filepath):
-    """Read content from Word documents"""
-    from docx import Document
-    doc = Document(filepath)
-    text = "\n".join([para.text for para in doc.paragraphs])
-    return text
-
-# Add to read_document()
-elif file_extension == '.docx':
-    return read_docx_file(filepath)
-```
-
-### Add New Metadata Field
-
-```python
-class ArticleMetadata(BaseModel):
-    headline: str
-    journalist: str
-    published_on: str
-    tags: list[str]
-    category: str
-    source_file: str
-    word_count: int  # New field
-```
-
-## 📦 Dependencies
-
+### Dependencies
 ```
 langchain-core      # LLM orchestration
 langchain-groq      # Groq AI integration
@@ -254,51 +184,29 @@ PyPDF2             # PDF parsing
 beautifulsoup4     # HTML parsing
 ```
 
-## 🎯 Advantages Over Simple Version
+### Supported File Formats
 
-| Feature | Simple | Advanced |
-|---------|--------|----------|
-| Text files | ✅ | ✅ |
-| PDF files | ❌ | ✅ |
-| HTML files | ❌ | ✅ |
-| Batch processing | ✅ | ✅ |
-| Auto format detection | ❌ | ✅ |
-| Source tracking | ❌ | ✅ |
+| Format | Extension | Parser |
+|--------|-----------|--------|
+| Text | .txt | Built-in |
+| HTML | .html, .htm | BeautifulSoup4 |
+| PDF | .pdf | PyPDF2 |
 
-## 🚨 Limitations
+### Environment Setup
+Create `.env` file with your Groq API key:
+```
+GROQ_API_KEY=your_api_key_here
+```
 
-### **PDF Scanned Images**
-- PyPDF2 extracts text from PDFs
-- For scanned images, need OCR (Tesseract)
-- Add OCR support if needed
+## ✅ Sample Documents
 
-### **Complex HTML**
-- JavaScript-rendered content not supported
-- Use Selenium for dynamic pages
+The script automatically creates sample documents if the `documents/` folder is empty:
+- `article1.txt` - News article about electric vehicles
+- `article2.html` - Opinion piece on remote work
+- `article3.txt` - Feature story on competitive gaming
 
-### **Large Files**
-- Very large PDFs may be slow
-- Consider pagination for huge documents
-
-## 🔮 Future Enhancements
-
-- [ ] Add OCR for scanned PDFs
-- [ ] Support Word documents (.docx)
-- [ ] Support Excel files (.xlsx)
-- [ ] Add image extraction
-- [ ] Parallel processing for speed
-- [ ] Web scraping support
-- [ ] Database integration
-
-## ✅ Testing
-
-The script automatically creates sample documents if none exist:
-- `article1.txt` - Text file
-- `article2.html` - HTML file
-- `article3.txt` - Another text file
-
-Add your own documents to the `documents/` folder!
+Add your own documents to process them!
 
 ---
 
-**Perfect for processing mixed document collections! 🚀**
+**Built with LangChain + Groq AI + Pydantic 🚀**
